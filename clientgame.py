@@ -21,6 +21,7 @@ font = pygame.font.Font(None, 36)  # Font to display the score
 server_address = ('localhost', 5555)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.setblocking(False)  # Set the socket to non-blocking
+
 try:
     client_socket.connect(server_address)
 except BlockingIOError:
