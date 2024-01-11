@@ -12,6 +12,8 @@ pygame.display.set_caption("Pong Online")
 
 # Colores y Fuente
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 font = pygame.font.Font(None, 36)  # Fuente para mostrar puntuación
 
@@ -52,10 +54,10 @@ def get_game_state(socket):
 
 
 def draw_ball(screen, x, y):
-    pygame.draw.rect(screen, WHITE, (x, y, 20, 20))
+    pygame.draw.rect(screen, RED, (x, y, 20, 20))
 
 def draw_paddle(screen, x, y):
-    pygame.draw.rect(screen, WHITE, (x, y, 10, 100))
+    pygame.draw.rect(screen, GREEN, (x, y, 10, 100))
 
 def draw_score(screen, score1, score2):
     score_text = font.render(f"{score1} - {score2}", True, WHITE)
