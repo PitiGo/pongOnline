@@ -86,7 +86,11 @@ class PongServer:
         with self.lock:
             self.clients.append(conn)
             # Assign player 1 or 2 depending on the order of connection
-            self.player_assignment[conn] = 1 if len(self.player_assignment) == 0 else 2
+            if len(self.player_assignment) == 0:
+                self.player_assignment[conn] = 1
+            else:
+                self.player_assignment[conn] = 2
+
 
         while True:
             try:

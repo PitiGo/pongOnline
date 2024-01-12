@@ -1,66 +1,104 @@
 import pygame
 import sys
 
-# Inicializar Pygame
+# Initialize Pygame and create the game window
 pygame.init()
-
-# Constantes
 WIDTH, HEIGHT = 800, 600
-BALL_SPEED = [5, 5]
-PADDLE_SPEED = 5
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-# Configurar la ventana
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pong")
+pygame.display.set_caption("Pong Local")
 
-# Funciones para dibujar la pelota y las paletas
+# Color definitions and font for score display
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+font = pygame.font.Font(None, 36)  # Font to display the score
+
+# Game state initialization
+game_state = {
+    'ball_x': WIDTH // 2,
+    'ball_y': HEIGHT // 2,
+    'ball_dx': 3,
+    'ball_dy': 3,
+    'paddle1_y': HEIGHT // 2,
+    'paddle2_y': HEIGHT // 2,
+    'score1': 0,
+    'score2': 0
+}
+
+def move_ball():
+    """ Moves the ball and checks for collisions. """
+    # Update ball position
+    game_state['ball_x'] += game_state['ball_dx']
+    game_state['ball_y'] += game_state['ball_dy']
+
+    # Collision with top and bottom
+    if game_state['ball_y'] <= 0 or game_state['ball_y'] >= HEIGHT - 20:
+        game_state['ball_dy'] = -game_state['ball_dy']
+
+    # Collision with paddles
+    if game_state['ball_x'] <= 10 and game_state['paddle1_y'] < game_state['ball_y'] < game_state['paddle1_y'] + 100:
+        game_state['ball_dx'] = -game_state['ball_dx']
+    elif game_state['ball_x'] >= WIDTH - 30 and game_state['paddle2_y'] < game_state['ball_y'] < game_state['paddle2_y'] + 100:
+        game_state['ball_dx'] = -game_state['ball_dx']
+
+    # Scoring
+    if game_state['ball_x'] <= 0:
+        game_state['score2'] += 1
+        reset_ball()
+    elif game_state['ball_x'] >= WIDTH:
+        game_state['score1'] += 1
+        reset_ball()
+
+def reset_ball():
+    """ Resets the ball to the center of the screen with a random direction. """
+    game_state['ball_x'] = WIDTH // 2
+    game_state['ball_y'] = HEIGHT // 2
+    game_state['ball_dx'] = -game_state['ball_dx']
+
+
 def draw_ball(screen, x, y):
-    pygame.draw.rect(screen, WHITE, (x, y, 20, 20))
+    """ Draw the ball on the screen. """
+    pygame.draw.rect(screen, RED, (x, y, 20, 20))
 
 def draw_paddle(screen, x, y):
-    pygame.draw.rect(screen, WHITE, (x, y, 10, 100))
+    """ Draw a paddle on the screen. """
+    pygame.draw.rect(screen, GREEN, (x, y, 10, 100))
 
-# Posiciones iniciales
-ball_x, ball_y = WIDTH // 2, HEIGHT // 2
-paddle1_y, paddle2_y = HEIGHT // 2 - 50, HEIGHT // 2 - 50
+def draw_score(screen, score1, score2):
+    """ Draw the score on the screen. """
+    score_text = font.render(f"{score1} - {score2}", True, WHITE)
+    screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 10))
 
-# Bucle principal
+def handle_input():
+    """ Handles keyboard input for both players. """
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and game_state['paddle1_y'] > 0:
+        game_state['paddle1_y'] -= 10
+    if keys[pygame.K_s] and game_state['paddle1_y'] < HEIGHT - 100:
+        game_state['paddle1_y'] += 10
+    if keys[pygame.K_UP] and game_state['paddle2_y'] > 0:
+        game_state['paddle2_y'] -= 10
+    if keys[pygame.K_DOWN] and game_state['paddle2_y'] < HEIGHT - 100:
+        game_state['paddle2_y'] += 10
+
+# Main game loop
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    # Movimiento de las paletas
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w] and paddle1_y > 0:
-        paddle1_y -= PADDLE_SPEED
-    if keys[pygame.K_s] and paddle1_y < HEIGHT - 100:
-        paddle1_y += PADDLE_SPEED
-    if keys[pygame.K_UP] and paddle2_y > 0:
-        paddle2_y -= PADDLE_SPEED
-    if keys[pygame.K_DOWN] and paddle2_y < HEIGHT - 100:
-        paddle2_y += PADDLE_SPEED
+    handle_input()  # Handle player inputs
 
-    # Movimiento de la pelota
-    ball_x += BALL_SPEED[0]
-    ball_y += BALL_SPEED[1]
+    move_ball()  # Move the ball and check for collisions
 
-    # Colisiones con la pared
-    if ball_y <= 0 or ball_y >= HEIGHT - 20:
-        BALL_SPEED[1] = -BALL_SPEED[1]
-    
-    # Colisiones con las paletas
-    if ball_x <= 10 and paddle1_y <= ball_y <= paddle1_y + 100 or ball_x >= WIDTH - 30 and paddle2_y <= ball_y <= paddle2_y + 100:
-        BALL_SPEED[0] = -BALL_SPEED[0]
-
-    # Redibujar los elementos en la ventana
+    # Draw game elements
     screen.fill(BLACK)
-    draw_ball(screen, ball_x, ball_y)
-    draw_paddle(screen, 10, paddle1_y)
-    draw_paddle(screen, WIDTH - 20, paddle2_y)
+    draw_ball(screen, game_state['ball_x'], game_state['ball_y'])
+    draw_paddle(screen, 10, game_state['paddle1_y'])
+    draw_paddle(screen, WIDTH - 20, game_state['paddle2_y'])
+    draw_score(screen, game_state['score1'], game_state['score2'])
 
     pygame.display.flip()
-    pygame.time.Clock().tick(60)  # 60 FPS
+    pygame.time.Clock().tick(60)  # 60 FPS for smoother gameplay
